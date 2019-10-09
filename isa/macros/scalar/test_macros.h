@@ -17,6 +17,30 @@ test_ ## testnum: \
     li  TESTNUM, testnum; \
     bne testreg, x29, fail;
 
+#define TEST_CASE_NO_EXCEPT( testnum, mcausei, returnaddr, code...) \
+test_ ## testnum: \
+    li  s11, mcausei; \
+    la  s10, fail; \
+    li  TESTNUM, testnum; \
+    code; \
+    j returnaddr;
+
+#define TEST_CASE_EXCEPT( testnum, mcausei, exceptret, code...) \
+test_ ## testnum: \
+    li  s11, mcausei; \
+    li  TESTNUM, testnum; \
+    la  s10, exceptret; \
+    code; \
+    j fail;
+
+#define TEST_CASE_EXCEPT_INIT_HANDLER \
+mtvec_handler: \
+    csrr t0, mcause; \
+    bne t0, s11, fail; \
+    jr s10;
+    # csrr t0, mepc; \     # compare mepc
+    # bne t0, x28, fail; \
+
 # We use a macro hack to simpify code generation for various numbers
 # of bubble cycles.
 
